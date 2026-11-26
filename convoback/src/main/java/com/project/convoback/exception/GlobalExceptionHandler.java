@@ -1,10 +1,11 @@
 package com.project.convoback.exception;
 
-import com.project.convoback.dto.authentication.ApiErrorResponse;
+import com.project.convoback.dto.error.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -89,6 +90,24 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiErrorResponse> handleResponseStatus(
+            ResponseStatusException exception
+    ) {
+
+        ApiErrorResponse response = new ApiErrorResponse(
+                exception.getStatusCode().value(),
+                "OTP_VERIFICATION_ERROR",
+                exception.getReason() != null
+                        ? exception.getReason()
+                        : "Request failed"
+        );
+
+        return ResponseEntity
+                .status(exception.getStatusCode())
                 .body(response);
     }
 }

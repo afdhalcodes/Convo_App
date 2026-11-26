@@ -1,4 +1,4 @@
-package com.project.convoback.dto.authentication;
+package com.project.convoback.dto.error;
 
 import java.util.Map;
 
