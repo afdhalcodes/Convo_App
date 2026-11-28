@@ -4,7 +4,7 @@ import './AuthPage.css'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 
-function AuthPage() {
+function AuthPage({ onLogin }) {
   const [page, setPage] = useState('login')
 
   const [loginData, setLoginData] = useState({
@@ -111,6 +111,8 @@ function AuthPage() {
 
       localStorage.setItem('token', token.trim())
       setLoggedIn(true)
+
+      onLogin(token.trim())
 
       showMessage('Login successful! You are now signed in.', 'success')
     } catch (error) {

@@ -8,7 +8,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -35,35 +34,60 @@ public class SecurityConfiguration {
     private JWTFilter jwtFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)throws Exception
-    {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+    ) throws Exception {
+
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> {})
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.OPTIONS,
+                                "/**"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                "/api/auth/**"
+                        ).permitAll()
+
+                        // Allow the initial WebSocket handshake.
+                        // JWT authentication happens in the STOMP interceptor.
+                        .requestMatchers(
+                                "/ws",
+                                "/ws/**"
+                        ).permitAll()
+
                         .anyRequest().authenticated()
                 )
-                .httpBasic(Customizer.withDefaults())
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
+
                 .addFilterBefore(
                         jwtFilter,
                         UsernamePasswordAuthenticationFilter.class
                 )
+
                 .build();
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(){
+    public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration configuration = new CorsConfiguration();
+
         configuration.setAllowedOrigins(
-                List.of("http://localhost:5174","https://convo.fd14.in")
+                List.of(
+                        "http://localhost:5174",
+                        "https://convo.fd14.in"
+                )
         );
+
         configuration.setAllowedMethods(
                 List.of(
                         "GET",
@@ -74,9 +98,11 @@ public class SecurityConfiguration {
                         "OPTIONS"
                 )
         );
+
         configuration.setAllowedHeaders(
                 List.of("*")
         );
+
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
@@ -110,5 +136,4 @@ public class SecurityConfiguration {
 
         return config.getAuthenticationManager();
     }
-
 }
